@@ -6,15 +6,16 @@ spec:
   containers:
     - name: nginx
       image: nginx
-      imagePullPolicy: always
+      imagePullPolicy: Always  # Corrected value
       ports:
         - containerPort: 80
       livenessProbe:
         httpGet:
           path: /
           port: 80
-        initialDelaySeconds: 3  # Correct placement
-        periodSeconds: 3         # Correct placement
+        initialDelaySeconds: 3
+        periodSeconds: 3
+
 
 
 
