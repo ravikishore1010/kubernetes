@@ -1,3 +1,4 @@
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -14,12 +15,12 @@ spec:
      env:
       - name: course
         valueFrom:
-            configMapKeyRef:
-              name: game-demo           # The ConfigMap this value comes from.
-              key: course # The key to fetch.
+          configMapKeyRef:
+            name: game-demo  # The ConfigMap this value comes from.
+            key: course      # The key to fetch.
       - name: duration
-          valueFrom:
-            configMapKeyRef:
-              name: game-demo
-              key: duration
+        valueFrom:
+          configMapKeyRef:
+            name: game-demo
+            key: duration
 
