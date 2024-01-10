@@ -12,8 +12,14 @@ spec:
      ports:
      - containerPort: 80
      env:
-     - name: course
-       value: devops
-     - name: duration
-       value: 25hrs
+      - name: course
+        valueFrom:
+            configMapKeyRef:
+              name: game-demo           # The ConfigMap this value comes from.
+              key: course # The key to fetch.
+      - name: duration
+          valueFrom:
+            configMapKeyRef:
+              name: game-demo
+              key: duration
 
