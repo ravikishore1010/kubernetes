@@ -1,0 +1,46 @@
+# Deployment Commands:
+1. Create a Deployment:
+   kubectl create deployment <deployment-name> --image=<image-name>
+
+2. Scale a Deployment:
+   kubectl scale deployment <deployment-name> --replicas=<number-of-replicas>
+
+3. Update a Deployment:
+   kubectl set image deployment/<deployment-name> <container-name>=<new-image>
+
+4. Roll back a Deployment:
+   kubectl rollout undo deployment/<deployment-name>
+
+5. Roll back to a Specific Revision:
+   kubectl rollout undo deployment/<deployment-name> --to-revision=<revision-number>
+
+6. Get Deployment Status:
+   kubectl rollout status deployment/<deployment-name>
+
+7. Get Deployment History:
+   kubectl rollout history deployment/<deployment-name>
+
+# ReplicaSet Commands:
+8. Get ReplicaSets:
+   kubectl get replicasets
+
+9. Describe ReplicaSet:
+   kubectl describe replicasets <replicaset-name>
+
+10. Delete ReplicaSet:
+    kubectl delete replicaset <replicaset-name>
+
+11. Scale ReplicaSet:
+    kubectl scale replicaset <replicaset-name> --replicas=<number-of-replicas>
+
+12. Update Image in ReplicaSet:
+    kubectl set image replicaset/<replicaset-name> <container-name>=<new-image>
+
+13. Get Pods Owned by ReplicaSet:
+    kubectl get pods --selector=replicaset=<replicaset-name>
+
+14. Get ReplicaSet Details:
+    kubectl get replicaset <replicaset-name> -o yaml
+
+15. Edit ReplicaSet:
+    kubectl edit replicaset <replicaset-name>
