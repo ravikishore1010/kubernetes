@@ -1,0 +1,163 @@
+# StorageClass for defining manual provisioning
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: manual
+provisioner: kubernetes.io/aws-ebs
+volumeBindingMode: WaitForFirstConsumer
+
+# PersistentVolume for the PV
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nginx-logs-pv
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  awsElasticBlockStore:
+    volumeID: <your_EBS_volume_ID>
+    fsType: ext4
+
+# PersistentVolumeClaim for binding to the PersistentVolume
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nginx-logs-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: nginx-logs-pv
+
+# Nginx ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  nginx.conf: |
+    # Nginx configuration
+    user nginx;
+    worker_processes auto;
+    pid /var/run/nginx.pid;
+
+    error_log  /var/log/nginx/error.log notice;
+
+    events {
+      worker_connections 768;
+    }
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr $time_local $request $status $body_bytes_sent $request_time';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+        keepalive_timeout  65;
+
+        server {
+            listen       80;
+            server_name  localhost;
+
+            location / {
+                root   /usr/share/nginx/html;
+                index  index.html index.htm;
+            }
+
+            location /nginx_status {
+                stub_status on;
+                access_log off;
+            }
+        }
+    }
+
+# Filebeat ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat-conf
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - type: log
+      paths:
+        - /var/log/nginx/*.log
+
+
+# DaemonSet for Filebeat
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat-daemon
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:7.15.2
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /etc/filebeat/filebeat.yml
+          subPath: filebeat.yml
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+      volumes:
+      - name: filebeat-config
+        configMap:
+          name: filebeat-conf
+          items:
+          - key: filebeat.yml
+            path: filebeat.yml
+      - name: nginx-logs
+        persistentVolumeClaim:
+          claimName: nginx-logs-pvc
+
+# Deployment for Nginx
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.18.0
+        volumeMounts:
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+      volumes:
+      - name: nginx-config
+        configMap:
+          name: nginx-conf
+          items:
+          - key: nginx.conf
+            path: nginx.conf
+      - name: nginx-logs
+        persistentVolumeClaim:
+          claimName: nginx-logs-pvc

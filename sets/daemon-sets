@@ -1,0 +1,33 @@
+# DaemonSet for Filebeat
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: filebeat-daemon
+spec:
+  selector:
+    matchLabels:
+      app: filebeat
+  template:
+    metadata:
+      labels:
+        app: filebeat
+    spec:
+      containers:
+      - name: filebeat
+        image: docker.elastic.co/beats/filebeat:7.15.2
+        volumeMounts:
+        - name: filebeat-config
+          mountPath: /etc/filebeat/filebeat.yml
+          subPath: filebeat.yml
+        - name: nginx-logs
+          mountPath: /var/log/nginx
+      volumes:
+      - name: filebeat-config
+        configMap:
+          name: filebeat-conf
+          items:
+          - key: filebeat.yml
+            path: filebeat.yml
+      - name: nginx-logs
+        persistentVolumeClaim:
+          claimName: nginx-logs-pvc
