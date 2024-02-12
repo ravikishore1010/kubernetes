@@ -128,7 +128,7 @@ spec:
           claimName: nginx-logs-pvc
 
 # Deployment for Nginx
-apiVersion: apps/v1
+apiVersion: v1
 kind: Deployment
 metadata:
   name: nginx-deployment
