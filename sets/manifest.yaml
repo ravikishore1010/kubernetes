@@ -4,6 +4,9 @@ kind: StorageClass
 metadata:
   name: manual
 provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+reclaimPolicy: Retain
 volumeBindingMode: WaitForFirstConsumer
 
 # PersistentVolume for the PV
@@ -137,6 +140,11 @@ spec:
   selector:
     matchLabels:
       app: nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2 # we asked for 10, we are okay if 9 are running at the time of upgrade
+      maxSurge: 2    
   template:
     metadata:
       labels:
