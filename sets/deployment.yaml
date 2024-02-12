@@ -3,7 +3,8 @@ kind: Deployment
 metadata:
   name: nginx-deployment
   annotations:
-    deployment.kubernetes.io/change-cause: "Upgraded to version 2.0"
+    changeCause: |
+      changing to 1.18.0 nginx version
   labels:
     app: nginx
 spec:
@@ -23,6 +24,6 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:1.21.6
+        image: nginx:1.18.0
         ports:
         - containerPort: 80
